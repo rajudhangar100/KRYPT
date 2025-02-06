@@ -36,7 +36,7 @@ export const TransactionProvider=({children})=>{
             if(account.length){
                 setcurrentAccount(account[0]);
                 getAllTransactions();
-            }else    console.log("Accounts Doesn't Exist.");   
+            }else    alert("Accounts Doesn't Exist.");   
         } catch (error) {
             console.error(error);
             throw new Error("Error in Checking wallet is connected or not");
@@ -66,7 +66,6 @@ export const TransactionProvider=({children})=>{
             const TransactionContract=getEthereumContract();
             
             const parsedAmount = ethers.utils.parseEther(amount);
-            console.log("Type of ParsedAmount:",(parsedAmount));
             await ethereum.request({
                 method: "eth_sendTransaction",
                 params: [{
@@ -79,13 +78,18 @@ export const TransactionProvider=({children})=>{
 
             const TransactionHash = await TransactionContract.addtoBlockchain(addressTo,parsedAmount,message,keyword);
             setisLoading(true);
-            console.log("Loading - ",TransactionHash.hash);
             await TransactionHash.wait();
             setisLoading(false);
-            console.log("Success - ",TransactionHash.hash);
             
             const transactionCount=await TransactionContract.totalTransactions();
             settransactionCount(transactionCount.toNumber());
+            setformData({
+                addressTo: "",
+                amount:"",
+                keyword:"",
+                message:""
+            })
+            getAllTransactions();
         }catch(error){
             console.error(error);
             throw new Error("Error in Sending transaction");
@@ -107,19 +111,18 @@ export const TransactionProvider=({children})=>{
               amount: parseInt(transaction.amount._hex) / (10 ** 18)
             }));
     
-            console.log(structuredTransactions);
     
             setTransactions(structuredTransactions);
           } else {
-            console.log("Ethereum is not present");
+            alert("Ethereum is not present");
           }
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       };
     
     return (
-    <TransactionContext.Provider value={{connectWallet,currentAccount,formData,handleChange,sendTransaction,transactions}}>
+    <TransactionContext.Provider value={{connectWallet,currentAccount,formData,handleChange,sendTransaction,transactions,isLoading}}>
         {children}
     </TransactionContext.Provider>
     )
